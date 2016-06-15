@@ -88,6 +88,7 @@
 			$('div#message').show()
 			var display = document.querySelector('#time');
 			startTimer(60 * 25, display);
+			notifyMe('Hey there!', 'Another pomodoro finished. Good job!');
 		}
 
 		function stopTheWorld() {
@@ -181,6 +182,35 @@
 			refreshNumbers();
 			showLogsHistory() 
 		})
+
+		// Notifications
+		
+		// request permission on page load
+		document.addEventListener('DOMContentLoaded', function () {
+		if (Notification.permission !== "granted")
+			Notification.requestPermission();
+		});
+
+		function notifyMe(title, text) {
+			if (!Notification) {
+				alert('Desktop notifications not available in your browser'); 
+				return;
+			}
+
+			if (Notification.permission !== "granted")
+				Notification.requestPermission();
+			else {
+				var notification = new Notification(title, {
+				icon: 'http://lenrok258.github.io/tomato-timer/images/cherry_icon.png',
+				body: text,
+				});
+
+				notification.onclick = function () {
+					window.open("http://lenrok258.github.io/tomato-timer");      
+				};
+
+			}
+		}
 
 	</script>
 </body>
