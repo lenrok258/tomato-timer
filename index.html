@@ -88,7 +88,6 @@
 			$('div#message').show()
 			var display = document.querySelector('#time');
 			startTimer(60 * 25, display);
-			notifyMe('Hey there!', 'Another pomodoro finished. Good job!');
 		}
 
 		function stopTheWorld() {
@@ -176,6 +175,7 @@
 		function playSuccess() {
 			var audio = new Audio('pacman_beginning.wav');
 			audio.play();
+			notifyMe('Hey there!', 'Another pomodoro finished. Good job!');
 		}
 
 		$(function() {
@@ -201,12 +201,12 @@
 				Notification.requestPermission();
 			else {
 				var notification = new Notification(title, {
-				icon: 'http://lenrok258.github.io/tomato-timer/images/cherry_icon.png',
-				body: text,
+					icon: 'http://lenrok258.github.io/tomato-timer/images/cherry_icon.png',
+					body: text,
 				});
 
 				notification.onclick = function () {
-					window.open("http://lenrok258.github.io/tomato-timer");      
+										     
 				};
 
 			}
