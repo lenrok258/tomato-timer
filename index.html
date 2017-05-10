@@ -1,223 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:padding-top="http://www.w3.org/1999/xhtml">
 
 <head>
-	<meta charset="UTF-8">
-	<link rel="shortcut icon" type="image/png" href="images/cherry_icon.png">
-	<link id="favicon" rel="shortcut icon" href="images/cherry_icon.png" sizes="16x16 32x32 48x48" type="image/png" />
-	<link rel="icon" href="images/cherry_icon.png" sizes="256x256" type="image/png" />
-	<link rel="apple-touch-icon-precomposed" sizes="152x152" href="images/cherry_icon.png" />
-	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/cherry_icon.png" />
-	<link rel="apple-touch-icon-precomposed" sizes="120x120" href="images/cherry_icon.png" />
-	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/cherry_icon.png" />
-	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/cherry_icon.png" />
-	<link rel="apple-touch-icon-precomposed" href="images/cherry_icon.png" />
-	<meta name="msapplication-TileImage" content="images/cherry_icon.png" />
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" type="image/png" href="images/cherry_icon.png">
+    <link id="favicon" rel="shortcut icon" href="images/cherry_icon.png" sizes="16x16 32x32 48x48" type="image/png"/>
+    <link rel="icon" href="images/cherry_icon.png" sizes="256x256" type="image/png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="images/cherry_icon.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/cherry_icon.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="120x120" href="images/cherry_icon.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/cherry_icon.png"/>
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/cherry_icon.png"/>
+    <link rel="apple-touch-icon-precomposed" href="images/cherry_icon.png"/>
+    <meta name="msapplication-TileImage" content="images/cherry_icon.png"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="logic.js"></script>
 </head>
 
-<body style="display: flex; font-size: 60px; padding: 30px; background-color: black; color: dimgrey;">
-	<div id="left" style="flex-grow: 3; text-align: center;">
-		<div id="message" style="display:none;">
-			<h1 style="font-size: 140px;">Nie przeszkadzać</h1>
-			<h2 style="">Do not disturb<h2>
-		</div>
-		<h1><span id="time">--:--</span></h1>
-		<button onClick="startTheWorld()">start</button>&nbsp;<button onClick="stopTheWorld()">stop</button>
-	</div>
+<body style="background-color: #fff0a1; color: #15213f; padding: 40px; font-size: 40px;">
+<div class="container" style="width: 100%">
+    <div class="row">
+        <div class="col-md-10">
 
-	<div id="right" style="flex-grow: 1; text-align: right;">
-		<span id="cherryNumber">0</span> x <img id="cherry-icon-proto" src="images/cherry_icon.png" width="120" style="vertical-align: middle"> <br/>
-		<span id="ghostNumber">0</span> x <img id="ghost-icon-proto" src="images/ghost_icon.png" width="120" style="vertical-align: middle"><br/><br/>
+            <div id="left" style="text-align: center;">
+                <div id="message" style="display:none;">
+                    <h1 style="padding-bottom: 30px">Nie przeszkadzać</h1>
+                    <h1 style="padding-bottom: 30px">Do not disturb</h1>
+                </div>
+                <h1 style="font-size: 180px; font-weight: bold;"><span id="time"><h1>--:--</h1></span></h1>
 
-		Log:
-		<div id="daysLog" style="font-size: 20px">
-			nothing to show
-		</div>
-	</div>
-
-	<script>
-		var timerTaskId;
-		var flashScreenTaskId;
-		var timerOn = false;
-
-		function getRandomColor() {
-			var letters = '0123456789ABCDEF'.split('');
-			var color = '#';
-			for (var i = 0; i < 6; i++ ) {
-				color += letters[Math.floor(Math.random() * 16)];
-			}
-			return color;
-		}
-
-		function startTimer(duration, display) {
-			timerOn = true;
-			var timer = duration, minutes, seconds;
-			timerTaskId = setInterval(function () {
-				minutes = parseInt(timer / 60, 10);
-				seconds = parseInt(timer % 60, 10);
-
-				minutes = minutes < 10 ? "0" + minutes : minutes;
-				seconds = seconds < 10 ? "0" + seconds : seconds;
-
-				display.textContent = minutes + ":" + seconds;
-
-				if (--timer < 0) {
-					timerOn = false;
-					clearInterval(timerTaskId);
-					flashScreenTaskId = setInterval(flashScreen, 300);
-					increaseCherryNumber();
-					showLogsHistory();
-					playSuccess();
-				}
-			}, 1000);
-		}
-
-		var flashStep = 1;
-		function flashScreen() {
-			if(flashStep==1) {
-				document.bgColor=getRandomColor();
-				flashStep=2;
-			} else {
-				document.bgColor=getRandomColor();
-				flashStep=1;
-			}
-		}
-
-		function startTheWorld() {
-			$('div#message').show()
-			var display = document.querySelector('#time');
-			startTimer(60 * 25, display);
-		}
-
-		function stopTheWorld() {
-			clearInterval(timerTaskId);
-			clearInterval(flashScreenTaskId);
-			document.bgColor="FFFFFF";
-			$('div#message').hide()
-			if (timerOn) {
-				increaseGhostNumber();
-			}
-			timerOn = false;
-			showLogsHistory();
-		}
-
-		function increaseCherryNumber() {
-			if (readCherryNumber()) {
-				writeCherryNumber(Number(readCherryNumber()) + 1);
-			} else {
-				writeCherryNumber(1);
-			}
-			refreshNumbers();
-		}
-
-		function cherryNumberVarName() {
-			var d = new Date();
-			return 'cherryNumber_' + d.getDate() + d.getMonth() + d.getFullYear();
-		}
-
-		function readCherryNumber() {
-			return localStorage.getItem(cherryNumberVarName());
-		}
-
-		function writeCherryNumber(number) {
-			localStorage.setItem(cherryNumberVarName(), number);
-		}
-
-		function increaseGhostNumber() {
-			if (readGhostNumber()) {
-				writeGhostNumber(Number(readGhostNumber()) + 1);
-			} else {
-				writeGhostNumber(1);
-			}
-			refreshNumbers();
-		}
-
-		function ghostNumberVarName() {
-			var d = new Date();
-			return 'ghostNumber_' + d.getDate() + d.getMonth() + d.getFullYear();
-		}
-
-		function readGhostNumber() {
-			return localStorage.getItem(ghostNumberVarName());
-		}
-
-		function writeGhostNumber(number) {
-			localStorage.setItem(ghostNumberVarName(), number);
-		}
-
-		function refreshNumbers() {
-			$('#cherryNumber').html(readCherryNumber() || 0);
-			$('#ghostNumber').html(readGhostNumber() || 0);
-		}
-
-		function getLogsHistory() {
-			var results = [];
-			var d = new Date();
-			for (var day = d.getDate(); day >= 0; day-- ) {
-				var cherry = localStorage.getItem('cherryNumber_' + day + d.getMonth() + d.getFullYear());
-				var ghost = localStorage.getItem('ghostNumber_' + day + d.getMonth() + d.getFullYear());
-				if (cherry || ghost) {
-					results.push(day + ': ' + (cherry || 0) + '/' + (ghost || 0));
-				}
-			}
-			return results;
-		}
-
-		function showLogsHistory() {
-			var $daysLog = $('#daysLog');
-			$daysLog.html('');
-			getLogsHistory().forEach(function(element, index, array) {
-				$daysLog.append(element + '<br/>');
-			});
-		}
-
-		function playSuccess() {
-			var audio = new Audio('applause.wav');
-			audio.play();
-			notifyMe('Hey there!', 'Another pomodoro finished. Good job!');
-		}
-
-		$(function() {
-			refreshNumbers();
-			showLogsHistory() 
-		})
-
-		// Notifications
-		
-		// request permission on page load
-		document.addEventListener('DOMContentLoaded', function () {
-		if (Notification.permission !== "granted")
-			Notification.requestPermission();
-		});
-
-		function notifyMe(title, text) {
-			if (!Notification) {
-				alert('Desktop notifications not available in your browser'); 
-				return;
-			}
-
-			if (Notification.permission !== "granted")
-				Notification.requestPermission();
-			else {
-				var notification = new Notification(title, {
-					icon: 'http://lenrok258.github.io/tomato-timer/images/cherry_icon.png',
-					body: text,
-				});
-
-				notification.onclick = function () {
-					notification.close();
-					stopTheWorld();
-				};
-
-				notification.onclose = function () {
-					stopTheWorld();
-				};
-
-			}
-		}
-
-	</script>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div id="right">
+                <div style="padding-bottom: 50px; border-bottom: dashed 1px #15213f">
+                    <div class="btn-group" role="group" aria-label="Controls">
+                        <button id="btn-start" class="btn btn-primary btn-lg" onClick="startTheWorld()">START</button>&nbsp;
+                        <button id="btn-stop" class="btn btn-primary btn-lg" disabled="disabled"
+                                onClick="stopTheWorld()">STOP
+                        </button>
+                    </div>
+                </div>
+                <div style="padding-top: 50px; padding-bottom: 50px; border-bottom: dashed 1px #15213f">
+                    <div style="padding-bottom: 30px;">
+                        <img id="cherry-icon-proto" src="images/cherry_icon.png"
+                             width="120"
+                             style="vertical-align: middle">
+                        x <span id="cherryNumber">0</span>
+                    </div>
+                    <div>
+                        <img id="ghost-icon-proto" src="images/ghost_icon.png"
+                             width="120"
+                             style="vertical-align: middle">
+                        x <span id="ghostNumber">0</span>
+                    </div>
+                </div>
+                <div style="padding-top: 50px;">
+                    Log:
+                    <div id="daysLog" style="font-size: 20px">
+                        <h2>nothing to show</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
