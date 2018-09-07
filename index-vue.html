@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -7,7 +8,19 @@
 
 <body>
     <div id="app">
-        {{ message }}
+        <div>{{ message }}</div>
+        <div>
+            Controls:
+            <button v-on:click="buttonActionClicked">{{ buttonActionText }}</button>
+        </div>
+        <div>
+            Todays score board:
+
+        </div>
+        <div>
+            Last few days:
+
+        </div>
     </div>
 </body>
 
@@ -15,7 +28,13 @@
     var app = new Vue({
         el: '#app',
         data: {
-            message: 'Hello Vue!'
+            message: 'Hello Vue!',
+            buttonActionText: 'Start'
+        },
+        methods: {
+            buttonActionClicked: function () {
+                this.buttonActionText = this.buttonActionText === 'Start' ? 'Stop' : 'Start';
+            }
         }
     })
 </script>
