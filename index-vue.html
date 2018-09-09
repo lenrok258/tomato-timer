@@ -25,15 +25,39 @@
 </body>
 
 <script type="text/javascript">
+
+    const DEFAULT_TOMATO_LENGTH_SEC = 25 * 60;
+
     var app = new Vue({
         el: '#app',
         data: {
             message: 'Hello Vue!',
-            buttonActionText: 'Start'
+            buttonActionText: 'Start',
+            time: DEFAULT_TOMATO_LENGTH_SEC
         },
         methods: {
             buttonActionClicked: function () {
-                this.buttonActionText = this.buttonActionText === 'Start' ? 'Stop' : 'Start';
+                this.toggleActionButton();
+                if (this.buttonActionClicked == 'Stop') {
+                    this.startNewTomato();
+                } else {
+                    this.interuptTomato();
+                }
+            },
+            startNewTomato: function () {
+                const that = this;
+                // TODO: save interval taskId
+                setInterval(function () {
+                    that.message = --that.time
+                }, 1000)
+            },
+            interuptTomato: function () {
+                this.toggleActionButton();
+                this.message = DEFAULT_TOMATO_LENGTH_SEC;
+                // TODO: Stop interval
+            },
+            toggleActionButton() {
+                this.buttonActionText = (this.buttonActionText === 'Start') ? 'Stop' : 'Start';
             }
         }
     })
