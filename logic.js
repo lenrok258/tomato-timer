@@ -1,3 +1,5 @@
+const TOMATO_MINUTES = 30;
+
 var timerTaskId;
 var flashScreenTaskId;
 var timerOn = false;
@@ -48,7 +50,7 @@ function flashScreen() {
 function startTheWorld() {
     $('div#message').show()
     var display = document.querySelector('#time');
-    startTimer(60 * 25, display);
+    startTimer(60 * TOMATO_MINUTES, display);
     $('button#btn-start').attr("disabled", true);
     $('button#btn-stop').attr("disabled", false);
 }
