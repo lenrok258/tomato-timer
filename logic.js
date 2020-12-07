@@ -168,7 +168,7 @@ function notifyMe(title, text) {
         Notification.requestPermission();
     else {
         var notification = new Notification(title, {
-            icon: 'http://lenrok258.github.io/tomato-timer/images/cherry_icon.png',
+            icon: 'https://lenrok258.github.io/tomato-timer/images/cherry_icon.png',
             body: text,
         });
 
