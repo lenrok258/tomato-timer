@@ -16,6 +16,10 @@ function getRandomColor() {
 function startTimer(duration, display) {
     timerOn = true;
     var timer = duration, minutes, seconds;
+
+    // disable task name input
+    toogleTaskNameInput(false);
+
     timerTaskId = setInterval(function () {
         minutes = parseInt(timer / 60, 10);
         seconds = parseInt(timer % 60, 10);
@@ -67,6 +71,9 @@ function stopTheWorld() {
     showLogsHistory();
     $('button#btn-start').attr("disabled", false);
     $('button#btn-stop').attr("disabled", true);
+
+    // enable task name input
+    toogleTaskNameInput(true);
 }
 
 function increaseCherryNumber() {
@@ -149,6 +156,14 @@ $(function () {
     refreshNumbers();
     showLogsHistory()
 })
+
+function toogleTaskNameInput(enable) {
+    var taskNameInput = document.querySelector('#task-name-input');
+    var taskNameText = document.querySelector('#task-name-text');
+    taskNameInput.style.display = enable ? 'block' : 'none';
+    taskNameText.innerHTML = taskNameInput.value;
+    taskNameText.style.display = !enable ? 'block' : 'none';
+}
 
 // Notifications
 
