@@ -47,7 +47,7 @@
                         <button id="btn-stop" class="btn btn-primary btn-lg" disabled="disabled"
                                 onClick="stopTheWorld()">STOP
                         </button>
-                        <form>
+                        <form onsubmit="startTheWorld(); return false;">
                             <div class="form-group">
                                 <input type="text" class="form-control" id="task-name-input" placeholder="task name">
                                 <span id="task-name-text" style="display: none;"></span>
