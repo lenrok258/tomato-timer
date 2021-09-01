@@ -13,23 +13,23 @@ function getRandomColor() {
     return color;
 }
 
-function startTimer(duration, display) {
+function startTimer(durationMs, display) {
+    displayTimeLeft(durationMs, display);
+
+    var startTimestampMs = Date.now();
+
     timerOn = true;
-    var timer = duration, minutes, seconds;
 
     // disable task name input
     toogleTaskNameInput(false);
 
     timerTaskId = setInterval(function () {
-        minutes = parseInt(timer / 60, 10);
-        seconds = parseInt(timer % 60, 10);
+        var timeElapsedMs = Date.now() - startTimestampMs;
+        var timeLeftMs = durationMs - timeElapsedMs;
 
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-        display.textContent = minutes + ":" + seconds;
-
-        if (--timer < 0) {
+        displayTimeLeft(timeLeftMs, display);
+        
+        if (timeLeftMs < 0) {
             timerOn = false;
             clearInterval(timerTaskId);
             flashScreenTaskId = setInterval(flashScreen, 300);
@@ -38,6 +38,16 @@ function startTimer(duration, display) {
             playSuccess();
         }
     }, 1000);
+}
+
+function displayTimeLeft(timeLeftMs, display) {
+    minutes = parseInt(Math.ceil(timeLeftMs / 1000) / 60, 10);
+    seconds = parseInt(Math.ceil(timeLeftMs / 1000) % 60, 10);
+
+    minutes = minutes < 10 ? "0" + minutes : minutes;
+    seconds = seconds < 10 ? "0" + seconds : seconds;
+
+    display.textContent = minutes + ":" + seconds;
 }
 
 var flashStep = 1;
@@ -54,7 +64,7 @@ function flashScreen() {
 function startTheWorld() {
     $('div#message').show()
     var display = document.querySelector('#time');
-    startTimer(60 * TOMATO_MINUTES, display);
+    startTimer(1000 * 60 * TOMATO_MINUTES, display);
     $('button#btn-start').attr("disabled", true);
     $('button#btn-stop').attr("disabled", false);
 }
