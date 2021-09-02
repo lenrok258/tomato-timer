@@ -28,7 +28,7 @@ function startTimer(durationMs, display) {
         var timeLeftMs = durationMs - timeElapsedMs;
 
         displayTimeLeft(timeLeftMs, display);
-        
+
         if (timeLeftMs < 0) {
             timerOn = false;
             clearInterval(timerTaskId);
@@ -208,3 +208,13 @@ function notifyMe(title, text) {
 
     }
 }
+
+function displayCurrentTime(display) {
+    var now = new Date();
+    display.textContent = now.toLocaleTimeString('pl-PL');
+}
+
+setInterval(function() {
+    var display = document.querySelector('#clock-display');
+    displayCurrentTime(display)
+}, 1000);
