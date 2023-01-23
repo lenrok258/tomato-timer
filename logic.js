@@ -1,4 +1,4 @@
-const TOMATO_MINUTES = 25;
+const TOMATO_MINUTES = 20;
 
 var timerTaskId;
 var flashScreenTaskId;
