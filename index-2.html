@@ -529,6 +529,14 @@
               idx++;
             }
             selectedTaskIndex = idx;
+          } else {
+            // Rise up from done to incomplete: move up to be last among incompletes
+            let idx = selectedTaskIndex;
+            while (idx > 0 && tasks[idx - 1].done) {
+              [tasks[idx], tasks[idx - 1]] = [tasks[idx - 1], tasks[idx]];
+              idx--;
+            }
+            selectedTaskIndex = idx;
           }
 
           saveTasks();
