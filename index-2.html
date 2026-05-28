@@ -422,6 +422,19 @@
           const task = tasks[selectedTaskIndex];
           if (task.running) stopTask(task.id); else startTask(task.id);
         }
+      } else if (e.key === 'p') {
+        e.preventDefault();
+        const audio = document.querySelector('.noise-player audio');
+        if (audio) audio.paused ? audio.play() : audio.pause();
+      } else if (e.key === 'n') {
+        e.preventDefault();
+        document.getElementById('add-task-btn').click();
+      } else if (e.key === 'd') {
+        e.preventDefault();
+        if (selectedTaskIndex >= 0 && selectedTaskIndex < tasks.length) {
+          const rows = document.querySelectorAll('#tasks-container .task-row');
+          rows[selectedTaskIndex]?.querySelector('.icon-btn.delete')?.click();
+        }
       } else if (e.key === 'Enter') {
         if (selectedTaskIndex >= 0 && selectedTaskIndex < tasks.length) {
           const rows = document.querySelectorAll('#tasks-container .task-row');
@@ -590,6 +603,7 @@
 
     document.getElementById('add-task-btn').addEventListener('click', () => {
       tasks.push(newTaskData());
+      selectedTaskIndex = tasks.length - 1;
       saveTasks();
       renderTasks();
       const inputs = document.querySelectorAll('.task-name');
