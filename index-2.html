@@ -96,6 +96,22 @@
       border-color: rgba(21,33,63,0.55);
       box-shadow: 0 0 0 3px rgba(21,33,63,0.18);
     }
+    .task-row.done {
+      opacity: 0.45;
+    }
+
+    .done-badge {
+      display: flex;
+      align-items: center;
+      color: #4caf50;
+      flex-shrink: 0;
+    }
+    .done-badge svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+    }
+
     .task-row.selected.running {
       box-shadow: 0 0 0 3px rgba(21,33,63,0.35);
     }
@@ -335,6 +351,7 @@
       if (raw.todayDate    === undefined) raw.todayDate    = todayStr();
       if (raw.todayElapsed === undefined) raw.todayElapsed = 0;
       if (raw.totalElapsed === undefined) raw.totalElapsed = 0;
+      if (raw.done         === undefined) raw.done         = false;
       return raw;
     }
 
@@ -369,6 +386,7 @@
         totalElapsed: 0,
         running: false,
         startedAt: null,
+        done: false,
       };
     }
 
@@ -398,6 +416,7 @@
     const ICON_PLAY   = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>`;
     const ICON_STOP   = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>`;
     const ICON_DELETE = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+    const ICON_DONE   = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
 
     /* ── Keyboard navigation ── */
     let selectedTaskIndex = -1;
@@ -421,15 +440,18 @@
 
       if (e.key === 'ArrowDown' && e.shiftKey) {
         e.preventDefault();
-        if (selectedTaskIndex >= 0 && selectedTaskIndex < tasks.length - 1) {
-          [tasks[selectedTaskIndex], tasks[selectedTaskIndex + 1]] = [tasks[selectedTaskIndex + 1], tasks[selectedTaskIndex]];
-          selectedTaskIndex += 1;
-          saveTasks();
-          renderTasks();
+        if (selectedTaskIndex >= 0 && selectedTaskIndex < tasks.length - 1 && !tasks[selectedTaskIndex].done) {
+          const nextTask = tasks[selectedTaskIndex + 1];
+          if (!nextTask.done) {
+            [tasks[selectedTaskIndex], tasks[selectedTaskIndex + 1]] = [tasks[selectedTaskIndex + 1], tasks[selectedTaskIndex]];
+            selectedTaskIndex += 1;
+            saveTasks();
+            renderTasks();
+          }
         }
       } else if (e.key === 'ArrowUp' && e.shiftKey) {
         e.preventDefault();
-        if (selectedTaskIndex > 0 && selectedTaskIndex < tasks.length) {
+        if (selectedTaskIndex > 0 && selectedTaskIndex < tasks.length && !tasks[selectedTaskIndex].done) {
           [tasks[selectedTaskIndex], tasks[selectedTaskIndex - 1]] = [tasks[selectedTaskIndex - 1], tasks[selectedTaskIndex]];
           selectedTaskIndex -= 1;
           saveTasks();
@@ -471,6 +493,27 @@
             nameEl.select();
           }
         }
+      } else if (e.key === 'c') {
+        e.preventDefault();
+        if (selectedTaskIndex >= 0 && selectedTaskIndex < tasks.length) {
+          const task = tasks[selectedTaskIndex];
+          if (task.running) stopTask(task.id);
+          const wasDone = task.done;
+          task.done = !wasDone;
+
+          if (!wasDone) {
+            // Sink down until only done tasks are below
+            let idx = selectedTaskIndex;
+            while (idx < tasks.length - 1 && !tasks[idx + 1].done) {
+              [tasks[idx], tasks[idx + 1]] = [tasks[idx + 1], tasks[idx]];
+              idx++;
+            }
+            selectedTaskIndex = idx;
+          }
+
+          saveTasks();
+          renderTasks();
+        }
       }
     });
 
@@ -480,7 +523,7 @@
       container.innerHTML = '';
       tasks.forEach((task, i) => {
         const row = document.createElement('div');
-        row.className = 'task-row' + (task.running ? ' running' : '') + (i === selectedTaskIndex ? ' selected' : '');
+        row.className = 'task-row' + (task.running ? ' running' : '') + (task.done ? ' done' : '') + (i === selectedTaskIndex ? ' selected' : '');
         row.dataset.id = task.id;
         row.addEventListener('click', () => { selectedTaskIndex = i; updateSelectionHighlight(); });
 
@@ -526,7 +569,7 @@
         startBtn.className = 'icon-btn start';
         startBtn.innerHTML = ICON_PLAY;
         startBtn.title = 'Start';
-        startBtn.disabled = task.running;
+        startBtn.disabled = task.running || task.done;
         startBtn.addEventListener('click', () => startTask(task.id));
 
         const stopBtn = document.createElement('button');
@@ -557,6 +600,13 @@
         });
 
         row.append(nameEl, rightEl, startBtn, stopBtn, delBtn);
+        if (task.done) {
+          const doneBadge = document.createElement('span');
+          doneBadge.className = 'done-badge';
+          doneBadge.innerHTML = ICON_DONE;
+          doneBadge.title = 'Done';
+          row.insertBefore(doneBadge, rightEl);
+        }
         container.appendChild(row);
 
         if (task.running) attachLiveUpdate(task.id, timerEl, totalEl);
@@ -587,7 +637,7 @@
 
     function startTask(id) {
       const task = tasks.find(t => t.id == id);
-      if (!task || task.running) return;
+      if (!task || task.running || task.done) return;
       tasks.forEach(t => { if (t.running) stopTask(t.id); });
 
       // new day? reset today counter
