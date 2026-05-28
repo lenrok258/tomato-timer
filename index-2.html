@@ -376,6 +376,7 @@
     if (tasks.length === 0) tasks = [newTaskData()];
 
     const intervals = {};
+    const notificationMilestones = {}; // Track how many 20-min milestones we've notified for
 
     function newTaskData(name = '') {
       return {
@@ -388,6 +389,22 @@
         startedAt: null,
         done: false,
       };
+    }
+
+    function notifyMe(title, text) {
+      if (!('Notification' in window)) {
+        console.warn('Desktop notifications not available');
+        return;
+      }
+      if (Notification.permission !== 'granted') {
+        Notification.requestPermission();
+        return;
+      }
+      new Notification(title, {
+        icon: 'images/cherry_icon.png',
+        body: text,
+        tag: 'pomodoro-timer',
+      });
     }
 
     /* ── Time helpers ── */
@@ -616,14 +633,27 @@
 
     function attachLiveUpdate(id, timerEl, totalEl) {
       if (intervals[id]) clearInterval(intervals[id]);
+      notificationMilestones[id] = 0; // Reset milestone tracking
       intervals[id] = setInterval(() => {
         const task = tasks.find(t => t.id == id);
         if (!task) { clearInterval(intervals[id]); return; }
-        timerEl.textContent = formatTime(getTodayElapsed(task));
+        const todayElapsed = getTodayElapsed(task);
+        timerEl.textContent = formatTime(todayElapsed);
         const total = getTotalElapsed(task);
-        const today = getTodayElapsed(task);
+        const today = todayElapsed;
         totalEl.textContent = total > today ? `Σ ${formatTime(total)}` : '';
         updateTotalTime();
+
+        // Send notification when task reaches 20min, 40min, 60min, etc.
+        const NOTIFICATION_INTERVAL = 1200; // 20 minutes in seconds
+        const currentMilestone = Math.floor(todayElapsed / NOTIFICATION_INTERVAL);
+        const lastNotifiedMilestone = notificationMilestones[id] || 0;
+        
+        if (currentMilestone > lastNotifiedMilestone && currentMilestone > 0) {
+          const minutes = currentMilestone * 20;
+          notifyMe('Pomodoro Timer', `⏱️ ${task.name || 'Task'} - ${minutes} min reached!`);
+          notificationMilestones[id] = currentMilestone;
+        }
       }, 1000);
     }
 
@@ -663,6 +693,7 @@
       task.running   = false;
       task.startedAt = null;
       if (intervals[id]) { clearInterval(intervals[id]); delete intervals[id]; }
+      delete notificationMilestones[id]; // Reset milestone tracking
       saveTasks();
       renderTasks();
       updateRunningTaskDisplay();
@@ -692,6 +723,11 @@
     updateTotalTime();
     updateRunningTaskDisplay();
     setInterval(updateRunningTaskDisplay, 1000);
+
+    // Request notification permission on page load
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
   </script>
 </body>
 </html>
