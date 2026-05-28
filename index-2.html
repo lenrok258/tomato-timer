@@ -22,7 +22,7 @@
 
     .noise-player {
       width: 100%;
-      max-width: 520px;
+      max-width: 620px;
     }
     .noise-player audio {
       width: 100%;
@@ -56,6 +56,12 @@
       color: #15213f;
       opacity: 0.5;
       margin-bottom: 4px;
+    }
+
+    #tasks-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .task-row {
@@ -349,7 +355,7 @@
         nameEl.type = 'text';
         nameEl.className = 'task-name' + (task.name ? ' locked' : '');
         nameEl.value = task.name;
-        nameEl.placeholder = 'Nazwa zadania…';
+        nameEl.placeholder = '';
         nameEl.readOnly = !!task.name;
 
         const lockName = () => {
