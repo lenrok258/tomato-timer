@@ -162,7 +162,7 @@
     }
 
     /* ── Blur / focus overlay ── */
-    body.unfocused > *:not(#clock) {
+    body.unfocused > *:not(#clock-area) {
       visibility: hidden;
     }
     body.unfocused {
@@ -170,6 +170,21 @@
     }
     body.unfocused #clock {
       color: #fff0a1;
+    }
+
+    #clock-area {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    #running-task-display {
+      display: none;
+      font-family: 'VT323', monospace;
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      color: #fff0a1;
+      letter-spacing: 0.05em;
+      text-align: right;
     }
   </style>
 </head>
@@ -181,7 +196,10 @@
   </div>
 
   <!-- Digital clock -->
-  <div class="clock" id="clock">00:00:00</div>
+  <div id="clock-area">
+    <div class="clock" id="clock">00:00:00</div>
+    <div id="running-task-display"></div>
+  </div>
 
   <!-- Tasks -->
   <section class="tasks-section">
@@ -192,21 +210,39 @@
 
   <script>
     /* ── Clock ── */
+    function updateRunningTaskDisplay() {
+      const el = document.getElementById('running-task-display');
+      if (!el) return;
+      let running;
+      try { running = tasks.find(t => t.running); } catch { return; }
+      const unfocused = document.body.classList.contains('unfocused');
+      if (unfocused && running) {
+        el.textContent = formatTime(getTodayElapsed(running));
+        el.style.display = 'block';
+      } else {
+        el.style.display = 'none';
+      }
+    }
+
     function updateClock() {
       const now = new Date();
       const pad = n => String(n).padStart(2, '0');
       document.getElementById('clock').textContent =
         `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+      updateRunningTaskDisplay();
     }
     updateClock();
     setInterval(updateClock, 1000);
 
     /* ── Focus tracking ── */
-    window.addEventListener('blur', () => document.body.classList.add('unfocused'));
-    window.addEventListener('focus', () => document.body.classList.remove('unfocused'));
-    document.addEventListener('visibilitychange', () => {
-      document.body.classList.toggle('unfocused', document.hidden);
-    });
+    function applyFocusState() {
+      document.body.classList.toggle('unfocused', !document.hasFocus());
+      updateRunningTaskDisplay();
+    }
+    window.addEventListener('blur', () => setTimeout(applyFocusState, 0));
+    window.addEventListener('focus', applyFocusState);
+    document.addEventListener('visibilitychange', applyFocusState);
+    applyFocusState();
 
     function todayStr() {
       const d = new Date();
@@ -404,6 +440,7 @@
       task.startedAt = Date.now();
       saveTasks();
       renderTasks();
+      updateRunningTaskDisplay();
     }
 
     function stopTask(id) {
@@ -417,6 +454,7 @@
       if (intervals[id]) { clearInterval(intervals[id]); delete intervals[id]; }
       saveTasks();
       renderTasks();
+      updateRunningTaskDisplay();
     }
 
     function deleteTask(id) {
@@ -436,6 +474,8 @@
 
     /* ── Init ── */
     renderTasks();
+    updateRunningTaskDisplay();
+    setInterval(updateRunningTaskDisplay, 1000);
   </script>
 </body>
 </html>
