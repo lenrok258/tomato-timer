@@ -73,11 +73,20 @@
       align-items: center;
       gap: 10px;
       transition: border-color 0.2s, box-shadow 0.2s;
+      cursor: pointer;
     }
     .task-row.running {
       border-style: solid;
       border-color: rgba(21,33,63,0.5);
       box-shadow: 0 0 0 2px rgba(21,33,63,0.3);
+    }
+    .task-row.selected {
+      background: rgba(255,255,255,0.75);
+      border-color: rgba(21,33,63,0.55);
+      box-shadow: 0 0 0 3px rgba(21,33,63,0.18);
+    }
+    .task-row.selected.running {
+      box-shadow: 0 0 0 3px rgba(21,33,63,0.35);
     }
 
     .task-name {
@@ -347,14 +356,61 @@
     const ICON_STOP   = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>`;
     const ICON_DELETE = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19a2 2 0 002 2h8a2 2 0 002-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
 
+    /* ── Keyboard navigation ── */
+    let selectedTaskIndex = -1;
+
+    function setSelectedTask(index) {
+      if (tasks.length === 0) { selectedTaskIndex = -1; return; }
+      selectedTaskIndex = Math.max(0, Math.min(index, tasks.length - 1));
+      updateSelectionHighlight();
+    }
+
+    function updateSelectionHighlight() {
+      document.querySelectorAll('#tasks-container .task-row').forEach((row, i) => {
+        row.classList.toggle('selected', i === selectedTaskIndex);
+      });
+    }
+
+    document.addEventListener('keydown', e => {
+      const active = document.activeElement;
+      const inInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+      if (inInput) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedTask(selectedTaskIndex === -1 ? 0 : selectedTaskIndex + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedTask(selectedTaskIndex === -1 ? tasks.length - 1 : selectedTaskIndex - 1);
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        if (selectedTaskIndex >= 0 && selectedTaskIndex < tasks.length) {
+          const task = tasks[selectedTaskIndex];
+          if (task.running) stopTask(task.id); else startTask(task.id);
+        }
+      } else if (e.key === 'Enter') {
+        if (selectedTaskIndex >= 0 && selectedTaskIndex < tasks.length) {
+          const rows = document.querySelectorAll('#tasks-container .task-row');
+          const nameEl = rows[selectedTaskIndex]?.querySelector('.task-name');
+          if (nameEl) {
+            nameEl.readOnly = false;
+            nameEl.classList.remove('locked');
+            nameEl.focus();
+            nameEl.select();
+          }
+        }
+      }
+    });
+
     /* ── Render ── */
     function renderTasks() {
       const container = document.getElementById('tasks-container');
       container.innerHTML = '';
-      tasks.forEach(task => {
+      tasks.forEach((task, i) => {
         const row = document.createElement('div');
-        row.className = 'task-row' + (task.running ? ' running' : '');
+        row.className = 'task-row' + (task.running ? ' running' : '') + (i === selectedTaskIndex ? ' selected' : '');
         row.dataset.id = task.id;
+        row.addEventListener('click', () => { selectedTaskIndex = i; updateSelectionHighlight(); });
 
         /* Name input */
         const nameEl = document.createElement('input');
@@ -370,7 +426,7 @@
           saveTasks();
         };
         nameEl.addEventListener('blur', lockName);
-        nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') nameEl.blur(); });
+        nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.stopPropagation(); nameEl.blur(); } });
         nameEl.addEventListener('dblclick', () => {
           nameEl.readOnly = false;
           nameEl.classList.remove('locked');
@@ -484,6 +540,7 @@
     function deleteTask(id) {
       stopTask(id);
       tasks = tasks.filter(t => t.id != id);
+      if (selectedTaskIndex >= tasks.length) selectedTaskIndex = tasks.length - 1;
       saveTasks();
       renderTasks();
     }
