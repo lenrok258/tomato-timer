@@ -426,7 +426,7 @@
           saveTasks();
         };
         nameEl.addEventListener('blur', lockName);
-        nameEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.stopPropagation(); nameEl.blur(); } });
+        nameEl.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === 'Escape') { e.stopPropagation(); nameEl.blur(); } });
         nameEl.addEventListener('dblclick', () => {
           nameEl.readOnly = false;
           nameEl.classList.remove('locked');
