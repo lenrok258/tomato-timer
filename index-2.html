@@ -447,6 +447,9 @@
     function updateSelectionHighlight() {
       document.querySelectorAll('#tasks-container .task-row').forEach((row, i) => {
         row.classList.toggle('selected', i === selectedTaskIndex);
+        if (i === selectedTaskIndex) {
+          row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
       });
     }
 
