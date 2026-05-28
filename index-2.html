@@ -611,6 +611,8 @@
     });
 
     /* ── Init ── */
+    const runningIdx = tasks.findIndex(t => t.running);
+    if (runningIdx !== -1) selectedTaskIndex = runningIdx;
     renderTasks();
     updateTotalTime();
     updateRunningTaskDisplay();
