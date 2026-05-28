@@ -85,6 +85,9 @@
       transition: border-color 0.2s, box-shadow 0.2s;
       cursor: pointer;
     }
+    .task-row.done-separator {
+      margin-top: 16px;
+    }
     .task-row.running {
       border-style: solid;
       border-color: #4caf50;
@@ -225,7 +228,7 @@
       text-align: right;
     }
     .tasks-footer-spacer {
-      width: 30px;
+      width: 60px;
       flex-shrink: 0;
     }
 
@@ -551,7 +554,8 @@
       container.innerHTML = '';
       tasks.forEach((task, i) => {
         const row = document.createElement('div');
-        row.className = 'task-row' + (task.running ? ' running' : '') + (task.done ? ' done' : '') + (i === selectedTaskIndex ? ' selected' : '');
+        const isFirstDone = task.done && i > 0 && !tasks[i - 1].done;
+        row.className = 'task-row' + (task.running ? ' running' : '') + (task.done ? ' done' : '') + (i === selectedTaskIndex ? ' selected' : '') + (isFirstDone ? ' done-separator' : '');
         row.dataset.id = task.id;
         row.addEventListener('click', () => { selectedTaskIndex = i; updateSelectionHighlight(); });
 
