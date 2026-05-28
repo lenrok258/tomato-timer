@@ -162,7 +162,8 @@
     .icon-btn.delete.pending { color: #d32f2f; opacity: 1; background: rgba(211,47,47,0.1); }
 
     .add-task-btn {
-      align-self: flex-end;
+      position: absolute;
+      right: 0;
       background: none;
       border: 1px dashed #15213f;
       border-radius: 8px;
@@ -176,6 +177,30 @@
     .add-task-btn:hover {
       background: rgba(21,33,63,0.08);
       opacity: 1;
+    }
+
+    .tasks-footer {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 14px;
+    }
+    .tasks-footer-name-col {
+      flex: 1;
+      min-width: 0;
+    }
+    .tasks-footer-total {
+      min-width: 72px;
+      font-size: 1rem;
+      font-variant-numeric: tabular-nums;
+      color: #15213f;
+      opacity: 0.35;
+      text-align: right;
+    }
+    .tasks-footer-spacer {
+      width: 30px;
+      flex-shrink: 0;
     }
 
     /* ── Blur / focus overlay ── */
@@ -227,7 +252,14 @@
   <section class="tasks-section">
     <h2></h2>
     <div id="tasks-container"></div>
-    <button class="add-task-btn" id="add-task-btn">+</button>
+    <div class="tasks-footer">
+      <div class="tasks-footer-name-col"></div>
+      <span class="tasks-footer-total" id="tasks-total-time"></span>
+      <span class="tasks-footer-spacer"></span>
+      <span class="tasks-footer-spacer"></span>
+      <span class="tasks-footer-spacer"></span>
+      <button class="add-task-btn" id="add-task-btn">+</button>
+    </div>
   </section>
 
   <script>
@@ -490,6 +522,7 @@
 
         if (task.running) attachLiveUpdate(task.id, timerEl, totalEl);
       });
+      updateTotalTime();
     }
 
     function attachLiveUpdate(id, timerEl, totalEl) {
@@ -501,10 +534,18 @@
         const total = getTotalElapsed(task);
         const today = getTodayElapsed(task);
         totalEl.textContent = total > today ? `Σ ${formatTime(total)}` : '';
+        updateTotalTime();
       }, 1000);
     }
 
     /* ── Actions ── */
+    function updateTotalTime() {
+      const el = document.getElementById('tasks-total-time');
+      if (!el) return;
+      const total = tasks.reduce((sum, t) => sum + getTodayElapsed(t), 0);
+      el.textContent = total > 0 ? formatTime(total) : '';
+    }
+
     function startTask(id) {
       const task = tasks.find(t => t.id == id);
       if (!task || task.running) return;
@@ -556,6 +597,7 @@
 
     /* ── Init ── */
     renderTasks();
+    updateTotalTime();
     updateRunningTaskDisplay();
     setInterval(updateRunningTaskDisplay, 1000);
   </script>
