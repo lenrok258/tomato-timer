@@ -707,14 +707,22 @@
       renderTasks();
     }
 
-    document.getElementById('add-task-btn').addEventListener('click', () => {
-      tasks.push(newTaskData());
-      selectedTaskIndex = tasks.length - 1;
+    function addNewTask() {
+      const firstDoneIdx = tasks.findIndex(t => t.done);
+      if (firstDoneIdx === -1) {
+        tasks.push(newTaskData());
+        selectedTaskIndex = tasks.length - 1;
+      } else {
+        tasks.splice(firstDoneIdx, 0, newTaskData());
+        selectedTaskIndex = firstDoneIdx;
+      }
       saveTasks();
       renderTasks();
-      const inputs = document.querySelectorAll('.task-name');
-      if (inputs.length) inputs[inputs.length - 1].focus();
-    });
+      const rows = document.querySelectorAll('#tasks-container .task-row');
+      rows[selectedTaskIndex]?.querySelector('.task-name')?.focus();
+    }
+
+    document.getElementById('add-task-btn').addEventListener('click', addNewTask);
 
     /* ── Init ── */
     const runningIdx = tasks.findIndex(t => t.running);
