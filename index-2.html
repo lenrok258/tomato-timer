@@ -156,6 +156,13 @@
       color: #15213f;
       opacity: 0.6;
       text-align: right;
+      border-radius: 3px;
+      padding: 1px 3px;
+      transition: background 0.15s;
+    }
+    .task-row:not(.running) .task-timer:hover {
+      background: rgba(21,33,63,0.08);
+      cursor: text;
     }
     .task-row.running .task-timer {
       opacity: 1;
@@ -169,6 +176,27 @@
       opacity: 0.35;
       text-align: right;
       margin-top: 2px;
+      border-radius: 3px;
+      padding: 1px 3px;
+      transition: background 0.15s;
+    }
+    .task-row:not(.running) .task-total:not(:empty):hover {
+      background: rgba(21,33,63,0.08);
+      cursor: text;
+    }
+
+    .time-edit-input {
+      font-size: inherit;
+      font-family: inherit;
+      font-variant-numeric: tabular-nums;
+      color: inherit;
+      background: rgba(255,255,255,0.95);
+      border: 1px solid rgba(21,33,63,0.45);
+      border-radius: 4px;
+      padding: 1px 4px;
+      width: 76px;
+      text-align: right;
+      outline: none;
     }
 
     .icon-btn {
@@ -400,7 +428,6 @@
         return;
       }
       if (Notification.permission !== 'granted') {
-        Notification.requestPermission();
         return;
       }
       new Notification(title, {
@@ -411,6 +438,67 @@
     }
 
     /* ── Time helpers ── */
+    function parseTimeInput(str) {
+      const parts = str.trim().split(':');
+      if (parts.length === 2) {
+        const m = parseInt(parts[0], 10);
+        const s = parseInt(parts[1], 10);
+        if (!isNaN(m) && !isNaN(s) && m >= 0 && s >= 0 && s <= 59) return m * 60 + s;
+      } else if (parts.length === 3) {
+        const h = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10);
+        const s = parseInt(parts[2], 10);
+        if (!isNaN(h) && !isNaN(m) && !isNaN(s) && h >= 0 && m >= 0 && m <= 59 && s >= 0 && s <= 59)
+          return h * 3600 + m * 60 + s;
+      }
+      return null;
+    }
+
+    function attachTimeEdit(el, task, field) {
+      el.addEventListener('dblclick', e => {
+        e.stopPropagation();
+        if (task.running) return;
+        const currentText = el.textContent.trim();
+        if (!currentText) return;
+
+        let shouldRevert = false;
+
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = currentText;
+        input.className = 'time-edit-input';
+
+        const finish = () => {
+          if (shouldRevert) { el.textContent = currentText; return; }
+          const seconds = parseTimeInput(input.value);
+          if (seconds !== null) {
+            if (field === 'today') {
+              const delta = seconds - task.todayElapsed;
+              task.todayElapsed = seconds;
+              task.totalElapsed = Math.max(0, task.totalElapsed + delta);
+            } else {
+              task.totalElapsed = Math.max(seconds, task.todayElapsed);
+            }
+            saveTasks();
+            renderTasks();
+          } else {
+            el.textContent = currentText;
+          }
+        };
+
+        input.addEventListener('keydown', ke => {
+          if (ke.key === 'Enter') { ke.preventDefault(); ke.stopPropagation(); input.blur(); }
+          else if (ke.key === 'Escape') { ke.preventDefault(); ke.stopPropagation(); shouldRevert = true; input.blur(); }
+        });
+        input.addEventListener('blur', finish);
+
+        el.textContent = '';
+        el.appendChild(input);
+        input.focus();
+        input.select();
+      });
+    }
+
     function formatTime(seconds) {
       seconds = Math.max(0, Math.floor(seconds));
       const h = Math.floor(seconds / 3600);
@@ -592,9 +680,12 @@
         totalEl.className = 'task-total';
         const total = getTotalElapsed(task);
         const today = getTodayElapsed(task);
-        totalEl.textContent = total > today ? `Σ ${formatTime(total)}` : '';
+        totalEl.textContent = total > today ? `${formatTime(total)}` : '';
 
         rightEl.append(timerEl, totalEl);
+
+        attachTimeEdit(timerEl, task, 'today');
+        attachTimeEdit(totalEl, task, 'total');
 
         /* Buttons */
         const startBtn = document.createElement('button');
@@ -656,7 +747,7 @@
         timerEl.textContent = formatTime(todayElapsed);
         const total = getTotalElapsed(task);
         const today = todayElapsed;
-        totalEl.textContent = total > today ? `Σ ${formatTime(total)}` : '';
+        totalEl.textContent = total > today ? `${formatTime(total)}` : '';
         updateTotalTime();
 
         // Send notification when task reaches 20min, 40min, 60min, etc.
