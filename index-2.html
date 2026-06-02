@@ -88,6 +88,15 @@
     .task-row.done-separator {
       margin-top: 16px;
     }
+    .completed-heading {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #15213f;
+      opacity: 0.5;
+      margin-bottom: 4px;
+      margin-top: 8px;
+    }
     .task-row.running {
       border-style: solid;
       border-color: #4caf50;
@@ -691,8 +700,14 @@
       container.innerHTML = '';
       tasks.forEach((task, i) => {
         const row = document.createElement('div');
-        const isFirstDone = task.done && i > 0 && !tasks[i - 1].done;
-        row.className = 'task-row' + (task.running ? ' running' : '') + (task.done ? ' done' : '') + (i === selectedTaskIndex ? ' selected' : '') + (isFirstDone ? ' done-separator' : '');
+        const isFirstDone = task.done && (i === 0 || !tasks[i - 1].done);
+        if (isFirstDone) {
+          const heading = document.createElement('h2');
+          heading.className = 'completed-heading';
+          heading.textContent = 'ukończone';
+          container.appendChild(heading);
+        }
+        row.className = 'task-row' + (task.running ? ' running' : '') + (task.done ? ' done' : '') + (i === selectedTaskIndex ? ' selected' : '');
         row.dataset.id = task.id;
         row.addEventListener('click', () => { selectedTaskIndex = i; updateSelectionHighlight(); });
 
